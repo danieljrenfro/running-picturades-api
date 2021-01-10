@@ -4,6 +4,8 @@ const helpers = require('./test-helpers');
 const supertest = require('supertest');
 const { expect } = require('chai');
 
+const ListsService = require('../src/lists/lists-service');
+
 describe('Lists Endpoints', function() {
   let db; 
 
@@ -310,6 +312,43 @@ describe('Lists Endpoints', function() {
         return supertest(app)
           .patch(`/api/lists/${listId}`)
           .send(updatedList)
+          .expect(404, { error: `List doesn't exist` });
+      });
+    });
+  });
+
+  describe('DELETE /api/lists/:list_id', () => {
+    context('Given the database has lists in it', () => {
+      beforeEach('seed tables', () => helpers.seedTables(db, testUsers, testLists, testWords));
+
+      it(`responds with 204 and removes the article and all associated words`, () => {
+        const listId = 1;
+        const expectedLists = testLists.filter(list => list.id !== listId);
+        const expectedWords = testWords.filter(word => word.list_id !== listId);
+
+        return supertest(app)
+          .delete(`/api/lists/${listId}`)
+          .expect(204)
+          .then(() => {
+            return supertest(app)
+              .get(`/api/lists`)
+              .expect(expectedLists);
+          })
+          .then(() => {
+            ListsService.getWordsByListId(db, listId)
+              .then(words => {
+                expect(words).to.eql(expectedWords);
+              });
+          });
+      });
+    });
+
+    context('Given the database is empty', () => {
+      it(`responds with 404 and 'List doesn't exist'`, () => {
+        const listId = 123456;
+
+        return supertest(app)
+          .delete(`/api/lists/${listId}`)
           .expect(404, { error: `List doesn't exist` });
       });
     });

@@ -95,6 +95,16 @@ listsRouter
         res.status(204).end();
       })
       .catch(next);
+  })
+  .delete((req, res, next) => {
+    const db = req.app.get('db');
+    const id = req.params.list_id;
+
+    ListsService.deleteList(db, id)
+      .then(() => {
+        res.status(204).end();
+      })
+      .catch(next);
   });
 
 listsRouter

@@ -40,6 +40,12 @@ const ListsService = {
       .from('picturades_lists')
       .where({ id })
       .update(updatedList);
+  },
+  deleteList(db, id) {
+    return db
+      .from('picturades_lists')
+      .where({ id })
+      .delete();
   }
 };
 

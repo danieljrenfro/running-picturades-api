@@ -8,6 +8,7 @@ const { NODE_ENV, CLIENT_ORIGIN } = require('./config');
 
 // Routers for App
 const listsRouter = require('./lists/lists-router');
+const wordsRouter = require('./words/words-router');
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use(
 );
 
 app.use('/api/lists', listsRouter);
+app.use('/api/words', wordsRouter);
 
 // eslint-disable-next-line no-unused-vars
 app.use(function errorHandler(error, req, res, next) {

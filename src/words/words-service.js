@@ -7,6 +7,13 @@ const WordsService = {
       list_id: word.list_id,
       word: xss(word.word)
     };
+  },
+  getById(db, id) {
+    return db
+      .from('picturades_words')
+      .select('*')
+      .where({ id })
+      .first();
   }
 };
 

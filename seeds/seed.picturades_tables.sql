@@ -13,7 +13,7 @@ VALUES
   ('larenfro', 'easypassword', 'Laurie Renfro');
 
 INSERT INTO picturades_lists
-  (title, game_type, user_id, creator_name)
+  (title, game_type, creator_id, creator_name)
 VALUES
   ('Misc Actions 1', 'Charades', 1, 'Daniel Renfro'),
   ('Misc Actions 2', 'Charades', 2, 'Laurie Renfro'),

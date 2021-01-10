@@ -27,6 +27,19 @@ const ListsService = {
       .from('picturades_words')
       .select('*')
       .where({ list_id });
+  },
+  insertList(db, newList) {
+    return db
+      .insert(newList)
+      .into('picturades_lists')
+      .returning('*')
+      .then(([row]) => row);
+  },
+  updateList(db, id, updatedList) {
+    return db
+      .from('picturades_lists')
+      .where({ id })
+      .update(updatedList);
   }
 };
 

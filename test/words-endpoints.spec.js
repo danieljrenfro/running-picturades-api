@@ -3,6 +3,9 @@ const supertest = require('supertest');
 const app = require('../src/app');
 const helpers = require('./test-helpers');
 
+const WordsService = require('../src/words/words-service');
+const { expect } = require('chai');
+
 describe.only('Words Endpoints', function() {
   let db;
 
@@ -62,6 +65,80 @@ describe.only('Words Endpoints', function() {
         return supertest(app)
           .get(`/api/words/${wordId}`)
           .expect(200, expectedWord);
+      });
+    });
+  });
+
+  describe('PATCH /api/words/:word_id', () => {
+    context('Given the database has words', () => {
+      beforeEach('seed tables', () => helpers.seedTables(db, testUsers, testLists, testWords));
+
+      it('responds with 204 and updates word', () => {
+        const wordId = 1;
+        const updatedWord = {
+          word: 'Updated Word'
+        };
+        const expectedWord = {
+          ...testWords[wordId - 1],
+          ...updatedWord
+        };
+
+        return supertest(app)
+          .patch(`/api/words/${wordId}`)
+          .send(updatedWord)
+          .expect(204)
+          .then(res => {
+            return supertest(app)
+              .get(`/api/words/${wordId}`)
+              .expect(expectedWord);
+          });
+      });
+
+      it(`responds with 400 and required field error`, () => {
+        const wordId = 1;
+        
+        return supertest(app)
+          .patch(`/api/words/${wordId}`)
+          .send({ irrelevantField: 'foo' })
+          .expect(400, { error: `Request body must contain 'word' field` });
+      });
+
+      it(`responds with 204 when only updating a sub-set of fields`, () => {
+        const wordId = 1;
+        const updatedWord = {
+          word: 'Updated Word'
+        };
+        const expectedWord = {
+          ...testWords[wordId - 1],
+          ...updatedWord          
+        };
+
+        return supertest(app)
+          .patch(`/api/words/${wordId}`)
+          .send({
+            ...updatedWord,
+            fieldToIgnore: 'foo'
+          })
+          .expect(204)
+          .then(res => {
+            return supertest(app)
+              .get(`/api/words/${wordId}`)
+              .expect(expectedWord);
+          });
+      });
+    });
+
+    context('Given the database is empty', () => {
+      it(`responds with 404 and 'Word doesn't exist'`, () => {
+        const wordId = 1;
+        const updatedWord = {
+          word: 'Updated Word'
+        };
+
+        return supertest(app)
+          .patch(`/api/words/${wordId}`)
+          .send(updatedWord)
+          .expect(404, { error: `Word doesn't exist` });
       });
     });
   });

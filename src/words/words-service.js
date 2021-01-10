@@ -14,6 +14,12 @@ const WordsService = {
       .select('*')
       .where({ id })
       .first();
+  },
+  updateWord(db, id, updatedWord) {
+    return db
+      .from('picturades_words')
+      .where({ id })
+      .update(updatedWord);
   }
 };
 

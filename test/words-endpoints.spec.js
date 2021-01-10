@@ -6,7 +6,7 @@ const helpers = require('./test-helpers');
 const WordsService = require('../src/words/words-service');
 const { expect } = require('chai');
 
-describe.only('Words Endpoints', function() {
+describe('Words Endpoints', function() {
   let db;
 
   const {
@@ -139,6 +139,60 @@ describe.only('Words Endpoints', function() {
           .patch(`/api/words/${wordId}`)
           .send(updatedWord)
           .expect(404, { error: `Word doesn't exist` });
+      });
+    });
+  });
+
+  describe('POST /api/words', () => {
+    beforeEach('seed lists', () => helpers.seedTables(db, testUsers, testLists));
+
+    it(`responds with 201, array of words and location for words`, () => {
+      const newWords = { words: testWords.slice(0, 14)};
+      const listId = 1;
+
+      return supertest(app)
+        .post(`/api/words`)
+        .send(newWords)
+        .expect(201)
+        .then(res => {
+          expect(res.body).to.eql(newWords.words);
+          expect(res.headers.location).to.eql(`/api/lists/${listId}/words`);
+        })
+        .then(res => {
+          return supertest(app)
+            .get(`/api/lists/${listId}/words`)
+            .expect(newWords.words);
+        });
+    });
+
+    describe('required fields are missing in POST request', () => {
+      
+      const requiredFields = ['word', 'list_id'];
+
+      requiredFields.forEach(field => {
+        const newWords = { words: helpers.makeWordsArray().slice(0, 14)};
+
+        newWords.words.forEach(word => delete word[field]);
+        
+        it(`responds with 400 if '${field}' is missing from a word`, () => {
+          return supertest(app)
+            .post(`/api/words`)
+            .send(newWords)
+            .expect(400, { error: `Missing '${field}' in request body` });
+        });
+      });
+      
+    });
+
+    context('Given xss attack', () => {
+      
+      it('removes xss attack from newWords', () => {
+        const { maliciousWords, expectedWords } = helpers.makeMaliciousWords();
+  
+        return supertest(app)
+          .post(`/api/words`)
+          .send({ words: maliciousWords})
+          .expect(201, expectedWords);
       });
     });
   });

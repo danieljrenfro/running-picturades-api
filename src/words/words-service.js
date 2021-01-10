@@ -20,6 +20,13 @@ const WordsService = {
       .from('picturades_words')
       .where({ id })
       .update(updatedWord);
+  },
+  insertWords(db, newWords) {
+    return db
+      .insert(newWords.words)
+      .into('picturades_words')
+      .returning('*')
+      .then(rows => rows);
   }
 };
 

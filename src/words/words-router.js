@@ -7,6 +7,39 @@ const wordsRouter = express.Router();
 const jsonBodyParser = express.json();
 
 wordsRouter
+  .route('/')
+  .post(jsonBodyParser, (req, res, next) => {
+    const db = req.app.get('db');
+    const { words } = req.body;
+    const newWords = { words };
+
+    let missingKey;
+    newWords.words.forEach(word => {
+      if (!word.word) {
+        missingKey = 'word';
+      } else if (!word.list_id) {
+        missingKey = 'list_id';
+      }
+    });
+
+    if (missingKey) {
+      return res.status(400).json({ error: `Missing '${missingKey}' in request body` });
+    }
+
+    WordsService.insertWords(db, newWords)
+      .then(words => {
+        const serializedWords = words.map(WordsService.serializeWord);
+        res
+          .status(201)
+          .location(path.posix.join(`/api/lists`, `/${words[0]['list_id']}/words`))
+          .json(serializedWords);
+      })
+      .catch(next);
+
+
+  });
+
+wordsRouter
   .route('/:word_id')
   .all((req, res, next) => {
     const db = req.app.get('db');
@@ -41,8 +74,6 @@ wordsRouter
         res.status(204).end();
       })
       .catch(next);
-
-
   });
 
 

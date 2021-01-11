@@ -3,8 +3,9 @@ const bcrypt = require('bcrypt');
 const app = require('../src/app');
 const helpers = require('./test-helpers');
 const { expect } = require('chai');
+const supertest = require('supertest');
 
-describe.only('Users Endpoints', function() {
+describe('Users Endpoints', function() {
   let db;
 
   const { testUsers } = helpers.makePicturadesFixtures();
@@ -162,6 +163,23 @@ describe.only('Users Endpoints', function() {
               })
           );
       });
+    });
+  });
+
+  describe(`GET /api/users`, () => {
+    beforeEach('seed users', () => helpers.seedUsers(db, testUsers));
+
+    it(`responds with 200 and the authenticated user`, () => {
+      const loggedInUser = {
+        id: testUser.id,
+        user_name: testUser.user_name,
+        full_name: testUser.full_name
+      };  
+      
+      return supertest(app)
+        .get('/api/users')
+        .set('Authorization', helpers.makeAuthHeader(testUser))
+        .expect(200, loggedInUser);
     });
   });
 });

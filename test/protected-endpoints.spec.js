@@ -26,28 +26,21 @@ describe('Protected Endpoints', function() {
 
   after('disconnect from db', () => db.destroy());
 
-  const newList = {
-    title: 'New List',
-    game_type: 'Pictionary',
-    creator_id: 1,
-    creator_name: 'Daniel Renfro'
-  };
-
-  const newWord = [{
-    word: 'New Word',
-    list_id: 1
-  }];
-
   const protectedEndpoints = [
     {
       name: 'POST /api/lists',
       path: '/api/lists',
-      data: newList
+      method: supertest(app).post
     },
     {
       name: 'POST /api/words',
       path: '/api/words',
-      data: newWord
+      method: supertest(app).post
+    },
+    {
+      name: `GET /api/users`,
+      path: '/api/users',
+      method: supertest(app).get
     }
   ];
 
@@ -58,9 +51,7 @@ describe('Protected Endpoints', function() {
   
       it(`responds with 401 'Missing bearer token' when no bearer token`, () => {
         
-        return supertest(app)
-          .post(ep.path)
-          .send(ep.data)
+        return ep.method(ep.path)
           .expect(401, { error: `Missing bearer token` });
       });
     
@@ -68,20 +59,16 @@ describe('Protected Endpoints', function() {
         const validUser = testUsers[0];
         const invalidSecret = 'bad-secret';
         
-        return supertest(app)
-          .post(ep.path)
+        return ep.method(ep.path)
           .set('Authorization', helpers.makeAuthHeader(validUser, invalidSecret))
-          .send(ep.data)
           .expect(401, { error: `Unauthorized request` });
       });
   
       it(`responds 401 'Unauthorized request' when sub in payload`, () => {
         const invalidUser = { user_name: 'user-not-existy', id: 1 };
         
-        return supertest(app)
-          .post(ep.path)
+        return ep.method(ep.path)
           .set('Authorization', helpers.makeAuthHeader(invalidUser))
-          .send(ep.data)
           .expect(401, { error: 'Unauthorized request' });
       });
     });

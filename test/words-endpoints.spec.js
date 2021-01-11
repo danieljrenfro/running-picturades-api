@@ -152,6 +152,7 @@ describe('Words Endpoints', function() {
 
       return supertest(app)
         .post(`/api/words`)
+        .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
         .send(newWords)
         .expect(201)
         .then(res => {
@@ -177,6 +178,7 @@ describe('Words Endpoints', function() {
         it(`responds with 400 if '${field}' is missing from a word`, () => {
           return supertest(app)
             .post(`/api/words`)
+            .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
             .send(newWords)
             .expect(400, { error: `Missing '${field}' in request body` });
         });
@@ -191,6 +193,7 @@ describe('Words Endpoints', function() {
   
         return supertest(app)
           .post(`/api/words`)
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
           .send({ words: maliciousWords})
           .expect(201, expectedWords);
       });

@@ -5,6 +5,12 @@ const UsersService = {
       .select('*')
       .where('id', id)
       .first();
+  },
+  getUserWithUserName(db, user_name) {
+    return db
+      .from('picturades_users')
+      .where('user_name', user_name)
+      .first();
   }
 };
 

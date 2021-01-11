@@ -9,8 +9,8 @@ TRUNCATE
 INSERT INTO picturades_users
   (user_name, password, full_name)
 VALUES
-  ('djrenfro', 'password', 'Daniel Renfro'),
-  ('larenfro', 'easypassword', 'Laurie Renfro');
+  ('djrenfro', '$2b$12$G4JGvmKz0kxk0L7Wl7YlOe1/SfRiFHWWVyUUb.d/4PPZJ5qY295qa', 'Daniel Renfro'),
+  ('larenfro', '$2b$12$Vc/67vqIqNOnYyt4kGkAw.NorsCdvSWKw3E2nPiSJdNXEgT6kuYbe', 'Laurie Renfro');
 
 INSERT INTO picturades_lists
   (title, game_type, creator_id, creator_name)

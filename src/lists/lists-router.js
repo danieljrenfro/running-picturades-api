@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 
-const UsersService = require('../users/users-service');
+const { requireAuth } = require('../middleware/jwt-auth');
 const ListsService = require('./lists-service');
 const WordsService = require('../words/words-service');
 
@@ -23,10 +23,10 @@ listsRouter
       })
       .catch(next);
   })
-  .post(jsonBodyParser, (req, res, next) => {
+  .post(requireAuth, jsonBodyParser, (req, res, next) => {
     const db = req.app.get('db');
-    const { creator_id, creator_name, title, game_type } = req.body;
-    const newList = { title, game_type, creator_id, creator_name};
+    const { title, game_type } = req.body;
+    const newList = { title, game_type};
     
     for (const [key, value] of Object.entries(newList)) {
       if (!value) {
@@ -37,24 +37,16 @@ listsRouter
     if (game_type !== 'Pictionary' && game_type !== 'Charades') {
       return res.status(400).json({ error: `'game_type' must either be 'Pictionary' or 'Charades'` });
     }
-    
-    UsersService.getUserById(db, creator_id)
-      .then(user => {
-        if (!user) {
-          return res.status(400).json({ error: `'creator_id' must be a real user` });
-        }
 
-        if (user.full_name !== creator_name) {
-          return res.status(400).json({ error: `'creator_name' must match full_name of 'creator_id' user` });
-        }
+    newList.creator_id = req.user.id;
+    newList.creator_name = req.user.full_name;
 
-        return ListsService.insertList(db, newList)
-          .then(list => {
-            res
-              .status(201)
-              .location(path.posix.join(req.originalUrl, `/${list.id}`))
-              .json(ListsService.serializeList(list));
-          });
+    return ListsService.insertList(db, newList)
+      .then(list => {
+        res
+          .status(201)
+          .location(path.posix.join(req.originalUrl, `/${list.id}`))
+          .json(ListsService.serializeList(list));
       })
       .catch(next); 
   });

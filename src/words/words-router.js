@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const { requireAuth } = require('../middleware/jwt-auth');
 
 const WordsService = require('./words-service');
 
@@ -8,7 +9,7 @@ const jsonBodyParser = express.json();
 
 wordsRouter
   .route('/')
-  .post(jsonBodyParser, (req, res, next) => {
+  .post(requireAuth, jsonBodyParser, (req, res, next) => {
     const db = req.app.get('db');
     const { words } = req.body;
     const newWords = { words };

@@ -1,26 +1,387 @@
-# Express Boilerplate!
+# Running Picturades API
 
-This is a boilerplate project used for starting new projects!
 
-## Set up
+## API Summary
 
-Complete the following steps to start a new project (NEW-PROJECT-NAME):
+This is an API for the Running Picturades React app.
 
-1. Clone this repository to your local machine `git clone BOILERPLATE-URL NEW-PROJECTS-NAME`
-2. `cd` into the cloned repository
-3. Make a fresh start of the git history for this project with `rm -rf .git && git init`
-4. Install the node dependencies `npm install`
-5. Move the example Environment file to `.env` that will be ignored by git and read by the express server `mv example.env .env`
-6. Edit the contents of the `package.json` to use NEW-PROJECT-NAME instead of `"name": "express-boilerplate",`
+## API Documentation
+##### Base URL 
+`https://guarded-castle-13310.herokuapp.com/api`
 
-## Scripts
+This API uses the JWT library to return authenication tokens back to the client to authentication certain routes. At this point only the POST /api/lists and POST /api/list/:list_id/words routes are authenticated.
 
-Start the application `npm start`
+### Auth
 
-Start nodemon for the application `npm run dev`
+##### `POST /auth/login`
+Request:
 
-Run the tests `npm test`
+```
+fetch(`baseURL/auth/login`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json'
+      },
+      body: {
+        "user_name": "testUser",
+        "password": "password"
+      }
+})
+```
 
-## Deploying
+Response:
 
-When your new project is ready for deployment, add a new Heroku application with `heroku create`. This will make a new git remote called "heroku" and you can then `npm run deploy` which will push to this remote's main branch.
+``` 
+status: 201,
+body: {
+  "authToken": "jwt-auth-token"
+}
+```
+
+### Users
+
+##### `GET /users`
+
+Request:
+
+``` 
+fetch(`BaseURL/users`, {
+  method: 'GET',
+  headers: {
+    'content-type': 'application/json'
+    'authorization': 'bearer jwt-token'
+  },
+  body: {}
+})
+```
+
+Response:
+
+``` 
+status: 200,
+body: {
+  "id": "1",
+  "user_name": "testUser",
+  "full_name": "Test User"
+}
+```
+
+##### `POST /users`
+
+Request:
+
+Requirements: 
+* "user_name" must be unique.
+* "password" must be between 8-72 characters, include one upper case letter, lower case letter, number and special character.
+
+``` 
+fetch(`baseURL/users`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json'
+      },
+      body: {
+        "user_name": "testUser",
+        "full_name": "Test User",
+        "password": "password"
+      }
+)}
+```
+
+Response:
+
+```
+status: 201,
+body: {
+  "id": "1",
+  "user_name": "testUser",
+  "full_name": "Test User"
+}
+```
+
+### Lists Routes
+
+##### `GET /lists`
+Request:
+
+```
+fetch(`baseURL/lists`, {
+  method: 'GET',
+  headers: {},
+  body: {}
+})
+```
+
+Response:
+
+```
+status: 200,
+body: [
+  {
+    "id": "1",
+    "title": "List 1",
+    "game_type": "Pictionary",
+    "creator_name": "Test User",
+    "creator_id": "1"
+  },
+  {
+    "id": "2",
+    "title": "List 2",
+    "game_type": "Charades",
+    "creator_name": "Test User",
+    "creator_id": "1"
+  }
+]
+```
+
+##### `GET /lists/:list_id`
+Request:
+
+```
+fetch(`baseURL/lists/1`, {
+  method: 'GET'
+  headers: {},
+  body: {}
+})
+```
+
+Response:
+
+``` 
+status: 200,
+body: {
+  "id": "1",
+  "title": "List 1",
+  "game_type": "Pictionary",
+  "creator_name": "Test User",
+  "creator_id": "1"
+}
+```
+
+##### `GET /lists/:list_id/words`
+Request:
+
+```
+fetch(`baseURL/lists/1/words`, {
+  methods: 'GET',
+  headers: {},
+  body: {}
+})
+```
+
+Response:
+
+```
+status: 200, 
+body: [
+  {
+    "id": "1",
+    "word": "First Word",
+    "list_id": "1"
+  },
+  {
+    "id": "2",
+    "word": "Second Word",
+    "list_id": "1"
+  },
+  {
+    "id": "3",
+    "word": "Third Word",
+    "list_id": "1"
+  }
+];
+```
+
+##### `POST /lists`
+Request:
+
+Requirements: 
+* "title" cannot be empty.
+* "game_type" must either be "Pictionary" or "Charades".
+```
+fetch(`baseURL/lists`, {
+  method: 'POST',
+  headers: {
+    'content-type': 'application/json',
+    'authorization': `bearer jwt-auth-token`
+  },
+  body: {
+    "title": "First List",
+    "game_type": "Pictionary"
+  },
+})
+```
+
+Response:
+
+``` 
+status: 201,
+location: "/api/lists/1"
+body: {
+  "id": "1",
+  "title": "First List",
+  "game_type": "Pictionary",
+  "creator_name": "Test User",
+  "creator_id": "1"
+}
+```
+
+
+##### `PATCH /lists/:list_id`
+Request:
+Requirements: 
+* Must either have "title" or "game_type" to update.
+
+``` 
+fetch(`baseURL/lists/1`, {
+  method: 'PATCH',
+  headers: {
+    'content-type': 'application/json'
+  },
+  body: {
+    "title": "Updated Title",
+    "game_type": "Charades"
+  }
+})
+```
+
+Response:
+
+```
+status: 204,
+body: {}
+```
+
+##### `DELETE /lists/:list_id`
+Request:
+
+``` 
+fetch(`baseURL/lists/1`, {
+  method: 'DELETE',
+  headers: {},
+  body: {}
+})
+```
+
+Response:
+
+``` 
+status: 204,
+body: {}
+```
+
+#### Words Route
+
+##### `GET /words/:word_id`
+Request:
+
+``` 
+fetch(`baseURL/words/1`, {
+  method: 'GET',
+  headers: {},
+  body: {}
+})
+```
+
+Response:
+
+``` 
+status: 200,
+body: {
+  "id": "1",
+  "word": "First Word",
+  "list_id": "1"
+}
+```
+
+##### `PATCH /words/:word_id`
+Request:
+
+``` 
+fetch(`${config.API_ENDPOINT}/words/${wordId}`, {
+  method: 'PATCH',
+  headers: {
+    'content-type': 'application/json'
+  },
+  body: {
+    "word": "Updated Word"
+  }
+})
+```
+
+Response:
+
+``` 
+status: 204,
+body: {}
+```
+
+##### `POST /words`
+Request: 
+
+``` 
+fetch(`baseURL/words`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'authorization': `bearer jwt-auth-token`
+      },
+      body: {
+        "words": [
+          {
+            "id": "1",
+            "word": "First Word",
+            "list_id": "1"
+          },
+          {
+            "id": "2",
+            "word": "Second Word",
+            "list_id": "1"
+          },
+          {
+            "id": "3",
+            "word": "Third Word",
+            "list_id": "1"
+          }
+        ]
+      }
+    })
+```
+
+Response:
+
+```
+status: 201,
+location: '/api/lists/1/words',
+body: {
+  "words": [
+    {
+      "id": "1",
+      "word": "First Word",
+      "list_id": "1"
+    },
+    {
+      "id": "2",
+      "word": "Second Word",
+      "list_id": "1"
+    },
+    {
+      "id": "3",
+      "word": "Third Word",
+      "list_id": "1"
+    }
+  ]
+}
+```
+
+#### Errors
+
+Errors coming back from the API will be formatted in a JSON object:
+
+` { error: 'Some error message here' } `
+
+## Technology Used
+* Node.js
+* Javascript
+* Express
+* PostgreSQL
